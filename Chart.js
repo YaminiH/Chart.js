@@ -2309,7 +2309,8 @@
 					var xWidth = this.calculateBaseWidth(),
 						xAbsolute = this.calculateX(barIndex) - (xWidth/2),
 						barWidth = this.calculateBarWidth(datasetCount);
-
+					if (datasetCount == 1)
+					    xAbsolute = this.calculateX(barIndex) - (xWidth / 4)
 					return xAbsolute + (barWidth * datasetIndex) + (datasetIndex * options.barDatasetSpacing) + barWidth/2;
 				},
 				calculateBaseWidth : function(){
@@ -2318,7 +2319,8 @@
 				calculateBarWidth : function(datasetCount){
 					//The padding between datasets is to the right of each bar, providing that there are more than 1 dataset
 					var baseWidth = this.calculateBaseWidth() - ((datasetCount - 1) * options.barDatasetSpacing);
-
+					if (datasetCount == 1)
+					    return ((baseWidth / 2));
 					return (baseWidth / datasetCount);
 				}
 			});
