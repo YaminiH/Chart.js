@@ -23,27 +23,19 @@ describe('Linear Scale', function() {
 			},
 			position: "left",
 			scaleLabel: {
-				fontColor: '#666',
-				fontFamily: 'Helvetica Neue',
-				fontSize: 12,
-				fontStyle: 'normal',
 				labelString: '',
 				display: false,
 			},
 			ticks: {
 				beginAtZero: false,
-				fontColor: "#666",
-				fontFamily: "Helvetica Neue",
-				fontSize: 12,
-				fontStyle: "normal",
-				maxRotation: 90,
+				maxRotation: 50,
 				mirror: false,
 				padding: 10,
 				reverse: false,
 				display: true,
 				callback: defaultConfig.ticks.callback, // make this work nicer, then check below
 				autoSkip: true,
-				autoSkipPadding: 20
+				autoSkipPadding: 0
 			}
 		});
 
@@ -169,6 +161,48 @@ describe('Linear Scale', function() {
 		expect(scale.max).toBe(80);
 	});
 
+	it('Should correctly determine the max & min data values ignoring data that is NaN', function() {
+		var scaleID = 'myScale';
+
+		var mockData = {
+			datasets: [{
+				yAxisID: scaleID,
+				data: [null, 90, NaN, undefined, 45, 30]
+			}]
+		};
+
+		var options = Chart.scaleService.getScaleDefaults('linear');
+		var Constructor = Chart.scaleService.getScaleConstructor('linear');
+		var scale = new Constructor({
+			ctx: {},
+			options: options, // use default config for scale
+			chart: {
+				data: mockData
+			},
+			id: scaleID
+		});
+
+		expect(scale).not.toEqual(undefined); // must construct
+		expect(scale.min).toBe(undefined); // not yet set
+		expect(scale.max).toBe(undefined);
+
+		// Set arbitrary width and height for now
+		scale.width = 50;
+		scale.height = 400;
+
+		scale.determineDataLimits();
+		scale.buildTicks();
+		expect(scale.min).toBe(30);
+		expect(scale.max).toBe(90);
+
+		// Scale is now stacked
+		options.stacked = true;
+
+		scale.determineDataLimits();
+		expect(scale.min).toBe(0);
+		expect(scale.max).toBe(90);
+	});
+
 	it('Should correctly determine the max & min for scatter data', function() {
 		var scaleID = 'myScale';
 
@@ -231,6 +265,50 @@ describe('Linear Scale', function() {
 		horizontalScale.buildTicks();
 		expect(horizontalScale.min).toBe(-20);
 		expect(horizontalScale.max).toBe(100);
+	});
+
+	it('Should correctly get the label for the given index', function() {
+		var scaleID = 'myScale';
+
+		var mockData = {
+			datasets: [{
+				xAxisID: scaleID, // for the horizontal scale
+				yAxisID: scaleID,
+				data: [{
+					x: 10,
+					y: 100
+				}, {
+					x: -10,
+					y: 0
+				}, {
+					x: 0,
+					y: 0
+				}, {
+					x: 99,
+					y: 7
+				}]
+			}]
+		};
+
+		var config = Chart.helpers.clone(Chart.scaleService.getScaleDefaults('linear'));
+		var Constructor = Chart.scaleService.getScaleConstructor('linear');
+		var scale = new Constructor({
+			ctx: {},
+			options: config,
+			chart: {
+				data: mockData
+			},
+			id: scaleID
+		});
+
+		// Set arbitrary width and height for now
+		scale.width = 50;
+		scale.height = 400;
+
+		scale.determineDataLimits();
+		scale.buildTicks();
+
+		expect(scale.getLabelForIndex(3, 0)).toBe(7)
 	});
 
 	it('Should correctly determine the min and max data values when stacked mode is turned on', function() {
@@ -1026,6 +1104,9 @@ describe('Linear Scale', function() {
 			"name": "setStrokeStyle",
 			"args": ["rgba(0, 0, 0, 0.1)"]
 		}, {
+			"name": "beginPath",
+			"args": []
+		}, {
 			"name": "moveTo",
 			"args": [0, 100.5]
 		}, {
@@ -1098,6 +1179,9 @@ describe('Linear Scale', function() {
 		}, {
 			"name": "setStrokeStyle",
 			"args": ["rgba(0, 0, 0, 0.1)"]
+		}, {
+			"name": "beginPath",
+			"args": []
 		}, {
 			"name": "moveTo",
 			"args": [0, 100.5]
@@ -1558,6 +1642,9 @@ describe('Linear Scale', function() {
 			"name": "setStrokeStyle",
 			"args": ["rgba(0, 0, 0, 0.1)"]
 		}, {
+			"name": "beginPath",
+			"args": []
+		}, {
 			"name": "moveTo",
 			"args": [30.5, 0]
 		}, {
@@ -1688,6 +1775,9 @@ describe('Linear Scale', function() {
 		}, {
 			"name": "setStrokeStyle",
 			"args": ["rgba(0, 0, 0, 0.1)"]
+		}, {
+			"name": "beginPath",
+			"args": []
 		}, {
 			"name": "moveTo",
 			"args": [30.5, 0]
@@ -1945,6 +2035,9 @@ describe('Linear Scale', function() {
 		}, {
 			"name": "setStrokeStyle",
 			"args": ["rgba(0, 0, 0, 0.1)"]
+		}, {
+			"name": "beginPath",
+			"args": []
 		}, {
 			"name": "moveTo",
 			"args": [30.5, 0]
